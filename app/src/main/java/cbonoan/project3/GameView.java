@@ -4,6 +4,11 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 
@@ -33,6 +38,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        Log.d("EVENT:", String.valueOf(event));
         touchX = (int)event.getX();
         touchY = (int)event.getY();
         return true;
@@ -89,4 +95,5 @@ public class GameView extends SurfaceView implements Runnable {
             e.printStackTrace();
         }
     }
+
 }
