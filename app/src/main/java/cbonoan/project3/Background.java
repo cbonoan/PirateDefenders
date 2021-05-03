@@ -43,7 +43,7 @@ public class Background {
     }
 
     public void update() {
-        this.y += 0.015f * dpi;
+        this.y += 0.025f * dpi;
 
         if(this.y > screenY) {
             this.y = -screenY;

@@ -1,8 +1,10 @@
 package cbonoan.project3;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 
 public class GameView extends SurfaceView implements Runnable {
@@ -11,14 +13,29 @@ public class GameView extends SurfaceView implements Runnable {
     private final Background background1;
     private final Background background2;
     private boolean isPlaying = true;
+    private int touchX;
+    private int touchY;
+
+    private final Player player;
 
     public GameView(Context context, int screenX, int screenY) {
         super(context);
 
+        Resources res = getResources();
+
         // Gives off the imitation of an endless background
-        background1 = new Background(screenX, screenY, getResources());
-        background2 = new Background(screenX, screenY, getResources());
+        background1 = new Background(screenX, screenY, res);
+        background2 = new Background(screenX, screenY, res);
         background2.setY(screenY);
+
+        player=  new Player(res);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        touchX = (int)event.getX();
+        touchY = (int)event.getY();
+        return true;
     }
 
     @Override
@@ -30,25 +47,23 @@ public class GameView extends SurfaceView implements Runnable {
         }
     }
 
-    private void draw() {
-        if(getHolder().getSurface().isValid()) {
-            Canvas canvas = getHolder().lockCanvas();
-            background1.draw(canvas);
-            background2.draw(canvas);
-            getHolder().unlockCanvasAndPost(canvas);
-        }
-    }
-
     private void update() {
         background1.update();
         background2.update();
+
+        player.update(touchX, touchY);
     }
 
-    private void sleep() {
-        try {
-            Thread.sleep(17);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    private void draw() {
+        if(getHolder().getSurface().isValid()) {
+            Canvas canvas = getHolder().lockCanvas();
+
+            background1.draw(canvas);
+            background2.draw(canvas);
+
+            player.draw(canvas);
+
+            getHolder().unlockCanvasAndPost(canvas);
         }
     }
 
@@ -65,5 +80,13 @@ public class GameView extends SurfaceView implements Runnable {
         isPlaying = true;
         thread = new Thread(this);
         thread.start();
+    }
+
+    private void sleep() {
+        try {
+            Thread.sleep(17);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
