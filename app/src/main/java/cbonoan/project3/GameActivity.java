@@ -10,6 +10,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.WindowManager;
 
@@ -19,7 +21,6 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager sensorManager;
     private Sensor accelerometer;
 
-    @SuppressLint("ServiceCast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,29 +37,41 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         // Create sensor service
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(GameActivity.this, accelerometer,
                 SensorManager.SENSOR_DELAY_NORMAL);
 
         setContentView(gameView);
     }
 
+    public void gameOver() {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        }, 6000);
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
+        sensorManager.unregisterListener(this);
         gameView.pause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         gameView.resume();
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        Log.d("GAMEACTIVITY", "X: " + sensorEvent.values[0] + " Y: " + sensorEvent.values[1] +
-                " Z: " + sensorEvent.values[2]);
+        Log.d("GAMEACTIVITY", "X: " + sensorEvent.values[0]);
+        gameView.setTiltX(sensorEvent.values[0]);
     }
 
     @Override
