@@ -20,6 +20,12 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
 
     private SensorManager sensorManager;
     private Sensor accelerometer;
+    private Sensor magneticField;
+    private final float[] accelerometerReading = new float[3];
+    private final float[] magnetometerReading = new float[3];
+
+    private final float[] rotationMatrix = new float[9];
+    private final float[] orientationAngles = new float[3];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +42,9 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
 
         // Create sensor service
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-
+        magneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
         sensorManager.registerListener(GameActivity.this, accelerometer,
                 SensorManager.SENSOR_DELAY_NORMAL);
 
@@ -65,17 +72,45 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     protected void onResume() {
         super.onResume();
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, magneticField, SensorManager.SENSOR_DELAY_NORMAL);
         gameView.resume();
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        Log.d("GAMEACTIVITY", "X: " + sensorEvent.values[0]);
-        gameView.setTiltX(sensorEvent.values[0]);
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            System.arraycopy(sensorEvent.values, 0, accelerometerReading,
+                    0, accelerometerReading.length);
+            //Log.d("accelerometer3: ", String.valueOf(accelerometerReading[0]));
+        } else if (sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+            System.arraycopy(sensorEvent.values, 0, magnetometerReading,
+                    0, magnetometerReading.length);
+            Log.d("magnetometerX: ", String.valueOf(magnetometerReading[0]));
+            Log.d("magnetometerY: ", String.valueOf(magnetometerReading[1]));
+            Log.d("magnetometerZ: ", String.valueOf(magnetometerReading[2]));
+        }
+        //Log.d("GAMEACTIVITY", "X: " + sensorEvent.values[0]);
+        updateOrientationAngles();
+        //Log.d("orientation: ", String.valueOf(orientationAngles[0]));
+
+        gameView.setTiltX(magnetometerReading[0]);
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
 
+    }
+    public void updateOrientationAngles() {
+        // Update rotation matrix, which is needed to update orientation angles.
+        SensorManager.getRotationMatrix(rotationMatrix, null,
+                accelerometerReading, magnetometerReading);
+
+        // "rotationMatrix" now has up-to-date information.
+
+        SensorManager.getOrientation(rotationMatrix, orientationAngles);
+        //Log.d("orientationX: ", String.valueOf(orientationAngles[0]));
+        //Log.d("orientationY: ", String.valueOf(orientationAngles[1]));
+        //Log.d("orientationZ: ", String.valueOf(orientationAngles[2]));
+        // "orientationAngles" now has up-to-date information.
     }
 }

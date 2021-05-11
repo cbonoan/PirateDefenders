@@ -43,12 +43,10 @@ public class Player implements GameObject{
         // Get sensor data and update x position of player
         // based on tilt of phone
 
-        if(tiltX < -2.0f && x <= screenWidth * 0.8) {
+        if(tiltX > 30.0f && x <= screenWidth * 0.8) {
             x += xSpeed;
-        } else if(tiltX > 2.0f && x >= 0) {
+        } else if(tiltX < -30.0f && x >= 0) {
             x -= xSpeed;
-        } else if(tiltX >= -2.0f && tiltX <= 2.0f) {
-            x += 0;
         }
     }
 
